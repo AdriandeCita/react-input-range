@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import autobind from 'autobind-decorator';
 import * as valueTransformer from './value-transformer';
 import DEFAULT_CLASS_NAMES from './default-class-names';
+import DEFAULT_VERTICAL_CLASS_NAMES from './default-class-names_vertical';
 import Label from './label';
 import rangePropType from './range-prop-type';
 import valuePropType from './value-prop-type';
@@ -36,7 +37,8 @@ export default class InputRange extends React.Component {
       onChangeStart: PropTypes.func,
       onChange: PropTypes.func.isRequired,
       onChangeComplete: PropTypes.func,
-      step: PropTypes.number,
+      orientation: PropTypes.string,
+      step: PropTypes.string,
       value: valuePropType,
     };
   }
@@ -53,6 +55,7 @@ export default class InputRange extends React.Component {
       disabled: false,
       maxValue: 10,
       minValue: 0,
+      orientation: 'horizontal',
       step: 1,
     };
   }
@@ -106,6 +109,10 @@ export default class InputRange extends React.Component {
      * @type {?string}
      */
     this.lastKeyMoved = null;
+
+    if (this.props.orientation === 'vertical') {
+      this.classNames = DEFAULT_VERTICAL_CLASS_NAMES;
+    }
   }
 
   /**
@@ -124,6 +131,10 @@ export default class InputRange extends React.Component {
    * @return {string}
    */
   getComponentClassName() {
+    if (this.classNames) {
+      return this.classNames.inputRange;
+    }
+
     if (!this.props.disabled) {
       return this.props.classNames.inputRange;
     }
@@ -148,7 +159,7 @@ export default class InputRange extends React.Component {
    */
   getKeyByPosition(position) {
     const values = valueTransformer.getValueFromProps(this.props, this.isMultiValue());
-    const positions = valueTransformer.getPositionsFromValues(values, this.props.minValue, this.props.maxValue, this.getTrackClientRect());
+    const positions = valueTransformer.getPositionsFromValues(values, this.props.minValue, this.props.maxValue, this.getTrackClientRect(), this.props.orientation === 'vertical');
 
     if (this.isMultiValue()) {
       const distanceToMin = distanceTo(position, positions.min);
@@ -235,7 +246,7 @@ export default class InputRange extends React.Component {
    */
   updatePosition(key, position) {
     const values = valueTransformer.getValueFromProps(this.props, this.isMultiValue());
-    const positions = valueTransformer.getPositionsFromValues(values, this.props.minValue, this.props.maxValue, this.getTrackClientRect());
+    const positions = valueTransformer.getPositionsFromValues(values, this.props.minValue, this.props.maxValue, this.getTrackClientRect(), this.props.orientation === 'vertical');
 
     positions[key] = position;
     this.lastKeyMoved = key;
@@ -253,8 +264,8 @@ export default class InputRange extends React.Component {
    */
   updatePositions(positions) {
     const values = {
-      min: valueTransformer.getValueFromPosition(positions.min, this.props.minValue, this.props.maxValue, this.getTrackClientRect()),
-      max: valueTransformer.getValueFromPosition(positions.max, this.props.minValue, this.props.maxValue, this.getTrackClientRect()),
+      min: valueTransformer.getValueFromPosition(positions.min, this.props.minValue, this.props.maxValue, this.getTrackClientRect(), this.props.orientation === 'vertical'),
+      max: valueTransformer.getValueFromPosition(positions.max, this.props.minValue, this.props.maxValue, this.getTrackClientRect(), this.props.orientation === 'vertical'),
     };
 
     const transformedValues = {
@@ -371,7 +382,7 @@ export default class InputRange extends React.Component {
       return;
     }
 
-    const position = valueTransformer.getPositionFromEvent(event, this.getTrackClientRect());
+    const position = valueTransformer.getPositionFromEvent(event, this.getTrackClientRect(), this.props.orientation === 'vertical');
     this.isSliderDragging = true;
     requestAnimationFrame(() => this.updatePosition(key, position));
   }
@@ -394,12 +405,12 @@ export default class InputRange extends React.Component {
       value: { max, min },
     } = this.props;
 
-    const position = valueTransformer.getPositionFromEvent(event, this.getTrackClientRect());
-    const value = valueTransformer.getValueFromPosition(position, minValue, maxValue, this.getTrackClientRect());
+    const position = valueTransformer.getPositionFromEvent(event, this.getTrackClientRect(), this.props.orientation === 'vertical');
+    const value = valueTransformer.getValueFromPosition(position, minValue, maxValue, this.getTrackClientRect(), this.props.orientation === 'vertical');
     const stepValue = valueTransformer.getStepValueFromValue(value, this.props.step);
 
-    const prevPosition = valueTransformer.getPositionFromEvent(prevEvent, this.getTrackClientRect());
-    const prevValue = valueTransformer.getValueFromPosition(prevPosition, minValue, maxValue, this.getTrackClientRect());
+    const prevPosition = valueTransformer.getPositionFromEvent(prevEvent, this.getTrackClientRect(), this.props.orientation === 'vertical');
+    const prevValue = valueTransformer.getValueFromPosition(prevPosition, minValue, maxValue, this.getTrackClientRect(), this.props.orientation === 'vertical');
     const prevStepValue = valueTransformer.getStepValueFromValue(prevValue, this.props.step);
 
     const offset = prevStepValue - stepValue;
@@ -464,8 +475,9 @@ export default class InputRange extends React.Component {
 
     event.preventDefault();
 
-    const value = valueTransformer.getValueFromPosition(position, minValue, maxValue, this.getTrackClientRect());
+    const value = valueTransformer.getValueFromPosition(position, minValue, maxValue, this.getTrackClientRect(), this.props.orientation === 'vertical');
     const stepValue = valueTransformer.getStepValueFromValue(value, this.props.step);
+    console.log(position);
 
     if (!this.props.draggableTrack || stepValue > max || stepValue < min) {
       this.updatePosition(this.getKeyByPosition(position), position);
@@ -607,7 +619,7 @@ export default class InputRange extends React.Component {
         <Slider
           ariaLabelledby={this.props.ariaLabelledby}
           ariaControls={this.props.ariaControls}
-          classNames={this.props.classNames}
+          classNames={this.classNames || this.props.classNames}
           formatLabel={this.props.formatLabel}
           key={key}
           maxValue={maxValue}
@@ -615,6 +627,7 @@ export default class InputRange extends React.Component {
           onSliderDrag={this.handleSliderDrag}
           onSliderKeyDown={this.handleSliderKeyDown}
           percentage={percentage}
+          orientation={this.props.orientation}
           type={key}
           value={value} />
       );
@@ -666,17 +679,18 @@ export default class InputRange extends React.Component {
         onMouseDown={this.handleMouseDown}
         onTouchStart={this.handleTouchStart}>
         <Label
-          classNames={this.props.classNames}
+          classNames={this.classNames || this.props.classNames}
           formatLabel={this.props.formatLabel}
           type="min">
           {this.props.minValue}
         </Label>
 
         <Track
-          classNames={this.props.classNames}
+          classNames={this.classNames || this.props.classNames}
           draggableTrack={this.props.draggableTrack}
           ref={(trackNode) => { this.trackNode = trackNode; }}
           percentages={percentages}
+          orientation={this.props.orientation}
           onTrackDrag={this.handleTrackDrag}
           onTrackMouseDown={this.handleTrackMouseDown}>
 
@@ -684,7 +698,7 @@ export default class InputRange extends React.Component {
         </Track>
 
         <Label
-          classNames={this.props.classNames}
+          classNames={this.classNames || this.props.classNames}
           formatLabel={this.props.formatLabel}
           type="max">
           {this.props.maxValue}

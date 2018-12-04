@@ -10,6 +10,12 @@
   .input-range--disabled & {
     background: $input-range-track-disabled-background;
   }
+
+  &--vertical {
+    height: 100%;
+    width: $input-range-track-height;
+    position: absolute;
+  }
 }
 
 .input-range__track--background {
@@ -18,6 +24,15 @@
   position: absolute;
   right: 0;
   top: 50%;
+
+  &--vertical {
+    top: 0;
+    bottom: 0;
+    right: auto;
+    left: 50%;
+    margin-top: 0;
+    margin-left: -0.5 * $input-range-track-height;
+  }
 }
 
 .input-range__track--active {

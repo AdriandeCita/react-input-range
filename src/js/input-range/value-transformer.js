@@ -7,9 +7,9 @@ import { clamp } from '../utils';
  * @param {ClientRect} clientRect
  * @return {number} Percentage value
  */
-export function getPercentageFromPosition(position, clientRect) {
-  const length = clientRect.width;
-  const sizePerc = position.x / length;
+export function getPercentageFromPosition(position, clientRect, isVertical) {
+  const length = isVertical ? clientRect.height : clientRect.width;
+  const sizePerc = (isVertical ? position.y : position.x) / length;
 
   return sizePerc || 0;
 }
@@ -23,8 +23,8 @@ export function getPercentageFromPosition(position, clientRect) {
  * @param {ClientRect} clientRect
  * @return {number}
  */
-export function getValueFromPosition(position, minValue, maxValue, clientRect) {
-  const sizePerc = getPercentageFromPosition(position, clientRect);
+export function getValueFromPosition(position, minValue, maxValue, clientRect, isVertical = false) {
+  const sizePerc = getPercentageFromPosition(position, clientRect, isVertical);
   const valueDiff = maxValue - minValue;
 
   return minValue + (valueDiff * sizePerc);
@@ -88,12 +88,15 @@ export function getPercentagesFromValues(values, minValue, maxValue) {
  * @param {ClientRect} clientRect
  * @return {Point} Position
  */
-export function getPositionFromValue(value, minValue, maxValue, clientRect) {
-  const length = clientRect.width;
+export function getPositionFromValue(value, minValue, maxValue, clientRect, isVertical) {
+  const length = isVertical ? clientRect.height : clientRect.width;
   const valuePerc = getPercentageFromValue(value, minValue, maxValue);
   const positionValue = valuePerc * length;
 
-  return {
+  return isVertical ? {
+    x: 0,
+    y: positionValue,
+  } : {
     x: positionValue,
     y: 0,
   };
@@ -108,10 +111,10 @@ export function getPositionFromValue(value, minValue, maxValue, clientRect) {
  * @param {ClientRect} clientRect
  * @return {Range}
  */
-export function getPositionsFromValues(values, minValue, maxValue, clientRect) {
+export function getPositionsFromValues(values, minValue, maxValue, clientRect, isVertical = false) {
   return {
-    min: getPositionFromValue(values.min, minValue, maxValue, clientRect),
-    max: getPositionFromValue(values.max, minValue, maxValue, clientRect),
+    min: getPositionFromValue(values.min, minValue, maxValue, clientRect, isVertical),
+    max: getPositionFromValue(values.max, minValue, maxValue, clientRect, isVertical),
   };
 }
 
@@ -122,7 +125,17 @@ export function getPositionsFromValues(values, minValue, maxValue, clientRect) {
  * @param {ClientRect} clientRect
  * @return {Point}
  */
-export function getPositionFromEvent(event, clientRect) {
+export function getPositionFromEvent(event, clientRect, isVertical = false) {
+  if (isVertical) {
+    const length = clientRect.height;
+    const { clientY } = event.touches ? event.touches[0] : event;
+
+    return {
+      x: 0,
+      y: (clamp(clientRect.bottom - clientY, 0, length)),
+    };
+  }
+
   const length = clientRect.width;
   const { clientX } = event.touches ? event.touches[0] : event;
 

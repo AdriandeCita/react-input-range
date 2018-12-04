@@ -24,6 +24,7 @@ export default class Track extends React.Component {
       onTrackDrag: PropTypes.func,
       onTrackMouseDown: PropTypes.func.isRequired,
       percentages: PropTypes.objectOf(PropTypes.number).isRequired,
+      orientation: PropTypes.string,
     };
   }
 
@@ -59,10 +60,10 @@ export default class Track extends React.Component {
    * @return {Object} CSS styles
    */
   getActiveTrackStyle() {
-    const width = `${(this.props.percentages.max - this.props.percentages.min) * 100}%`;
-    const left = `${this.props.percentages.min * 100}%`;
+    const length = `${(this.props.percentages.max - this.props.percentages.min) * 100}%`;
+    const offset = `${this.props.percentages.min * 100}%`;
 
-    return { left, width };
+    return this.props.orientation === 'vertical' ? { bottom: offset, height: length } : { left: offset, width: length };
   }
 
   /**
@@ -140,12 +141,23 @@ export default class Track extends React.Component {
    */
   @autobind
   handleMouseDown(event) {
-    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-    const trackClientRect = this.getClientRect();
-    const position = {
-      x: clientX - trackClientRect.left,
-      y: 0,
-    };
+    let position;
+
+    if (this.props.orientation === 'vertical') {
+      const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+      const trackClientRect = this.getClientRect();
+      position = {
+        x: 0,
+        y: trackClientRect.bottom - clientY,
+      };
+    } else {
+      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+      const trackClientRect = this.getClientRect();
+      position = {
+        x: clientX - trackClientRect.left,
+        y: 0,
+      };
+    }
 
     this.props.onTrackMouseDown(event, position);
 

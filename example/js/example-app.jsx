@@ -9,6 +9,7 @@ export default class ExampleApp extends React.Component {
 
     this.state = {
       value: 5,
+      value1: 8,
       value2: 10,
       value3: 10,
       value4: {
@@ -29,6 +30,14 @@ export default class ExampleApp extends React.Component {
   render() {
     return (
       <form className="form">
+        <InputRange
+          maxValue={20}
+          minValue={0}
+          orientation="vertical"
+          value={this.state.value1}
+          onChange={value => this.setState({ value1: value })}
+          onChangeComplete={value => console.log(value)} />
+
         <InputRange
           maxValue={20}
           minValue={0}

@@ -2,6 +2,11 @@
   left: -50%;
   position: relative;
 
+  &--vertical {
+    right: 100%;
+    left: auto;
+  }
+
   .input-range__label--max & {
     left: 50%;
   }

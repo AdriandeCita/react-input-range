@@ -8,4 +8,9 @@
   height: $input-range-slider-height;
   position: relative;
   width: 100%;
+
+  &--vertical {
+    width: $input-range-slider-height;
+    height: 300px;
+  }
 }

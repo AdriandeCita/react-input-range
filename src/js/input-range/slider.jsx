@@ -36,6 +36,7 @@ export default class Slider extends React.Component {
       percentage: PropTypes.number.isRequired,
       type: PropTypes.string.isRequired,
       value: PropTypes.number.isRequired,
+      orientation: PropTypes.string,
     };
   }
 
@@ -81,9 +82,10 @@ export default class Slider extends React.Component {
    */
   getStyle() {
     const perc = (this.props.percentage || 0) * 100;
+    const { orientation } = this.props;
     const style = {
       position: 'absolute',
-      left: `${perc}%`,
+      [orientation === 'vertical' ? 'bottom' : 'left']: `${perc}%`,
     };
 
     return style;
