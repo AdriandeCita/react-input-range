@@ -67,7 +67,6 @@
     "rimraf": "^2.6.3",
     "sass-lint": "^1.10.2",
     "sass-loader": "^6.0.3",
-    "sasslint-webpack-plugin": "^1.0.4",
     "style-loader": "^0.14.0",
     "uglify-js": "^2.8.16",
     "uglifyjs-webpack-plugin": "^0.3.1",
